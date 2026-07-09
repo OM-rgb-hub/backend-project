@@ -1,7 +1,7 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.models.js"
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {uploadCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
  
 const registerUser = asyncHandler(async(req,res) =>{
@@ -13,7 +13,7 @@ const registerUser = asyncHandler(async(req,res) =>{
         throw new ApiError(400,"All fileds are required")
     }
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{username} , {email}]
     })
 
@@ -24,12 +24,12 @@ const registerUser = asyncHandler(async(req,res) =>{
     const avatarLocalPath = req.files?.avatar[0]?.path;
     const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-    if(!avatarLOcalPath){
+    if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is required")
     }
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
-    const avatar = await uploadOnCloudinary(coverImageLocalPath);
+    const avatar = await uploadCloudinary(avatarLocalPath);
+    const coverImage = await uploadCloudinary(coverImageLocalPath);
 
     if(!avatar){
         throw new ApiError(408,"Avatar file is required")
@@ -52,9 +52,11 @@ const registerUser = asyncHandler(async(req,res) =>{
         throw new ApiError(500, "something went wrong  registering the user")
     }
 
-    return res.status(201).json({
+    return res
+    .status(201)
+    .json(
         new ApiResponse(200,createdUser,"user registered successfully")
-    })
+    );
 
  
 })
