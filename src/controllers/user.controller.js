@@ -5,6 +5,7 @@ import { uploadCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { subscribe } from "diagnostics_channel";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -394,7 +395,7 @@ const getUserChannelprofile = asyncHandler(async (req, res) => {
     );
 });
 
-const getWatchHistory = asynchandler(async(req,res) =>{
+const getWatchHistory = asyncHandler(async(req,res) =>{
   const user = await User.aggregate([
     {
       $match:{
@@ -436,9 +437,13 @@ const getWatchHistory = asynchandler(async(req,res) =>{
     }
   ])
 
+  if (!user.length) {
+    throw new ApiError(404, "User not found");
+}
+
   return res
   .status(200)
-  .json(ApiResponse(200,user[0].watchHistory,
+  .json(new ApiResponse(200,user[0].watchHistory,
     "watch history fetched successfully"
   ))
 })
@@ -452,6 +457,7 @@ export {
   currentuser,
   updateAccountDetails,
   updateUSerAvatar,
+  updateCoverImage,
   getUserChannelprofile,
   getWatchHistory
 };
